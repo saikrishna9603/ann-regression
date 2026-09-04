@@ -1,0 +1,11 @@
+{
+  "dataset_rows": 284807,
+  "target": "Amount",
+  "features": 29,
+  "training_rows": 227845,
+  "test_rows": 56962,
+  "iterations": 72,
+  "mae": 5.987145005242321,
+  "rmse": 161.43246962591883,
+  "r_squared": 0.5068269741947036
+}

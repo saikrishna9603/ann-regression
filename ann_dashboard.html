@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ANN Regression Dashboard</title>
+  <style>
+    :root {
+      --ink: #152b35;
+      --muted: #60747a;
+      --paper: #f5f8f4;
+      --panel: #ffffff;
+      --line: #dce7e2;
+      --teal: #167c80;
+      --teal-light: #d9f0ec;
+      --amber: #e6a23c;
+      --coral: #d86d55;
+      --shadow: 0 18px 45px rgba(22, 55, 61, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Georgia, 'Times New Roman', serif;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .45;
+      background-image: linear-gradient(rgba(22, 124, 128, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(22, 124, 128, .035) 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+    .shell { position: relative; max-width: 1180px; margin: 0 auto; padding: 52px 28px 64px; }
+    header { display: flex; justify-content: space-between; gap: 28px; align-items: end; margin-bottom: 34px; }
+    .kicker { color: var(--teal); font: 700 12px/1.2 Arial, sans-serif; letter-spacing: 2px; text-transform: uppercase; }
+    h1 { margin: 10px 0 10px; font-size: clamp(38px, 6vw, 72px); line-height: .95; font-weight: 400; letter-spacing: 0; }
+    .lede { max-width: 620px; margin: 0; color: var(--muted); font: 16px/1.6 Arial, sans-serif; }
+    .status { min-width: 176px; padding: 15px 18px; border: 1px solid var(--line); background: var(--panel); box-shadow: var(--shadow); }
+    .status-label { color: var(--muted); font: 11px Arial, sans-serif; letter-spacing: 1px; text-transform: uppercase; }
+    .status-value { display: flex; gap: 8px; align-items: center; margin-top: 9px; font: 700 15px Arial, sans-serif; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--teal); box-shadow: 0 0 0 5px var(--teal-light); }
+    .hero { display: grid; grid-template-columns: 1.4fr .8fr; gap: 18px; margin-bottom: 18px; }
+    .panel { background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow); }
+    .model-panel { min-height: 232px; padding: 30px; display: flex; flex-direction: column; justify-content: space-between; }
+    .panel-eyebrow { color: var(--muted); font: 11px Arial, sans-serif; letter-spacing: 1.5px; text-transform: uppercase; }
+    .model-title { margin: 12px 0 0; font-size: 36px; font-weight: 400; }
+    .model-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
+    .tag { padding: 8px 11px; background: var(--teal-light); color: var(--teal); font: 700 12px Arial, sans-serif; }
+    .insight-panel { padding: 30px; background: var(--ink); color: white; }
+    .insight-panel .panel-eyebrow { color: #a9c8c5; }
+    .insight-value { margin: 22px 0 5px; color: #ffcf78; font-size: 50px; line-height: 1; }
+    .insight-copy { margin: 0; color: #c3d2d0; font: 13px/1.5 Arial, sans-serif; }
+    .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 18px; }
+    .metric { padding: 23px; }
+    .metric-label { color: var(--muted); font: 11px Arial, sans-serif; letter-spacing: 1.2px; text-transform: uppercase; }
+    .metric-value { margin-top: 14px; font-size: 36px; line-height: 1; }
+    .metric:nth-child(1) .metric-value { color: var(--teal); }
+    .metric:nth-child(2) .metric-value { color: var(--coral); }
+    .metric:nth-child(3) .metric-value { color: var(--amber); }
+    .details { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .detail-panel { padding: 26px 30px; }
+    .detail-panel h2 { margin: 0 0 22px; font-size: 22px; font-weight: 400; }
+    .row { display: flex; justify-content: space-between; gap: 20px; padding: 13px 0; border-top: 1px solid var(--line); font: 14px Arial, sans-serif; }
+    .row span:first-child { color: var(--muted); }
+    .row strong { font-weight: 700; text-align: right; }
+    .bar { height: 10px; margin-top: 11px; background: #edf2ef; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--teal); transition: width .7s ease; }
+    footer { margin-top: 26px; color: var(--muted); font: 12px Arial, sans-serif; }
+    @media (max-width: 760px) {
+      .shell { padding: 34px 18px 44px; }
+      header, .hero, .details { grid-template-columns: 1fr; display: grid; align-items: start; }
+      header { gap: 22px; }
+      .metrics { grid-template-columns: 1fr; }
+      .model-panel, .insight-panel, .detail-panel { padding: 23px; }
+      .status { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div>
+        <div class="kicker">Neural network / regression</div>
+        <h1>Transaction<br>amounts, estimated.</h1>
+        <p class="lede">A compact readout of the artificial neural network trained on the credit-card transaction dataset.</p>
+      </div>
+      <div class="status"><div class="status-label">Run status</div><div class="status-value"><span class="dot"></span><span id="status">Latest run</span></div></div>
+    </header>
+
+    <section class="hero">
+      <article class="panel model-panel">
+        <div><div class="panel-eyebrow">Prediction target</div><div class="model-title" id="target">Amount</div></div>
+        <div class="model-meta"><span class="tag" id="feature-tag">29 features</span><span class="tag" id="iteration-tag">72 iterations</span><span class="tag">MLPRegressor</span></div>
+      </article>
+      <article class="panel insight-panel">
+        <div class="panel-eyebrow">Typical absolute error</div>
+        <div class="insight-value" id="insight-mae">$5.99</div>
+        <p class="insight-copy">The median transaction estimate is close in dollar terms, while large transactions contribute more heavily to RMSE.</p>
+      </article>
+    </section>
+
+    <section class="metrics" aria-label="Regression metrics">
+      <article class="panel metric"><div class="metric-label">Mean absolute error</div><div class="metric-value" id="mae">$5.99</div></article>
+      <article class="panel metric"><div class="metric-label">Root mean squared error</div><div class="metric-value" id="rmse">$161.43</div></article>
+      <article class="panel metric"><div class="metric-label">R-squared</div><div class="metric-value" id="r2">0.5068</div><div class="bar"><div class="bar-fill" id="r2-bar" style="width: 50.68%"></div></div></article>
+    </section>
+
+    <section class="details">
+      <article class="panel detail-panel">
+        <h2>Data footprint</h2>
+        <div class="row"><span>Total records</span><strong id="dataset-rows">284,807</strong></div>
+        <div class="row"><span>Training records</span><strong id="training-rows">227,845</strong></div>
+        <div class="row"><span>Test records</span><strong id="test-rows">56,962</strong></div>
+      </article>
+      <article class="panel detail-panel">
+        <h2>Model readout</h2>
+        <div class="row"><span>Architecture</span><strong>64 → 32 → 1</strong></div>
+        <div class="row"><span>Target transform</span><strong>log1p + standard scale</strong></div>
+        <div class="row"><span>Input transform</span><strong>standard scale</strong></div>
+      </article>
+    </section>
+    <footer>Metrics refresh from <strong>ann_results.json</strong> after running <strong>python ann_prediction.py</strong>.</footer>
+  </main>
+  <script>
+    const formatNumber = (value) => Number(value).toLocaleString('en-US');
+    const formatMoney = (value) => `$${Number(value).toFixed(2)}`;
+    const applyResults = (results) => {
+      document.getElementById('target').textContent = results.target;
+      document.getElementById('feature-tag').textContent = `${results.features} features`;
+      document.getElementById('iteration-tag').textContent = `${results.iterations} iterations`;
+      document.getElementById('insight-mae').textContent = formatMoney(results.mae);
+      document.getElementById('mae').textContent = formatMoney(results.mae);
+      document.getElementById('rmse').textContent = formatMoney(results.rmse);
+      document.getElementById('r2').textContent = Number(results.r_squared).toFixed(4);
+      document.getElementById('r2-bar').style.width = `${Math.max(0, Math.min(100, results.r_squared * 100))}%`;
+      document.getElementById('dataset-rows').textContent = formatNumber(results.dataset_rows);
+      document.getElementById('training-rows').textContent = formatNumber(results.training_rows);
+      document.getElementById('test-rows').textContent = formatNumber(results.test_rows);
+      document.getElementById('status').textContent = 'Latest run';
+    };
+    fetch('ann_results.json').then((response) => response.json()).then(applyResults).catch(() => {
+      document.getElementById('status').textContent = 'Embedded results';
+    });
+  </script>
+</body>
+</html>
